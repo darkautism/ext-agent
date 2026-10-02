@@ -337,7 +337,7 @@ export const register: Register = (on, options) => {
     worktreeLayout: options.worktreeLayout === 'sibling' ? 'sibling' : 'claude',
   }
 
-  if (config.blockBuiltin) on('agent.offer', ($, e, next) => (e.provider.plugin === 'ext-agent' ? next(e) : { isOffered: false }))
+  if (config.blockBuiltin) on('agent.offer', ($, e, next) => (e.agent === TYPE || e.provider.plugin.split('@')[0] === 'ext-agent' ? next(e) : { isOffered: false }))
 
   on('tool.describe', { tool: 'Agent' }, async ($, e, next) => {
     const described = await next(e)

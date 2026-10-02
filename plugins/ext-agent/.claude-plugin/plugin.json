@@ -1,6 +1,6 @@
 {
   "name": "ext-agent",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Run Claude Code subagents in pi or opencode instead of a Claude model. Adds the ext-agent:worker agent type; built-in subagents stay available unless you opt in to blocking them.",
   "author": {
     "name": "darkautism",
