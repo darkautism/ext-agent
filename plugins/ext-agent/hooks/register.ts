@@ -385,12 +385,6 @@ export const register: Register = (on, options) => {
     }
   })
 
-  // The worker's own tool calls ran in the CLI already: allowed without a
-  // prompt, and answered with the CLI's outcome, read from its output.
-  on('tool.check', ($, e, next) =>
-    e.tool_use_id !== undefined && ours.has(e.tool_use_id) ? { decision: 'allow' } : next(e),
-  )
-
   on('tool.call', async ($, e, next) => {
     if (!ours.has(e.tool_use_id)) return next(e)
     ours.delete(e.tool_use_id)

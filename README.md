@@ -112,6 +112,43 @@ The plugin hooks the Agent tool and the worker's model loop:
   when Claude Code compacts a worker, the plugin drops the middle of the transcript itself (keeping the task and the
   last 80 messages) without asking any model. The full history stays in pi's / opencode's own session.
 
+## What it sends, runs and decides
+
+**Network.** The plugin itself makes no network calls and sends nothing anywhere. The `pi` / `opencode` process it
+starts receives the task prompt (your header lines stripped) and reads and writes files in the worker's directory;
+what that process sends to its model provider is up to its own configuration, not this plugin. For an opencode model,
+the plugin runs `opencode models` once to check the name.
+
+**Programs it runs** (all through Claude Code's process API, never through a shell string built from your input
+except the fixed wrapper below):
+
+| Program | Why |
+| --- | --- |
+| `pi` or `opencode` | The agent itself: `pi -p --mode json [--model <m>] --session-id <key> <prompt>`, or `opencode run --standalone --auto --format json [--model <m>] --title <key> [--session <id>] <prompt>`. |
+| `opencode models`, `opencode session list --standalone --format json` | Validate an opencode model name; find the opencode session of a worker being continued. |
+| `/bin/sh` | A fixed wrapper `cd "$1" && shift; set -m; "$@" & …` that changes into the worker's directory and runs the CLI in its own process group, so `TaskStop` or an interrupt stops everything the CLI started. The directory and the CLI's arguments are passed as separate arguments, not spliced into the script. |
+| `test -d <cwd>` | Check the `cwd:` header names a directory. |
+| `git rev-parse`, `git worktree list`, `git worktree prune`, `git symbolic-ref`, `git worktree add` | Only for `worktree:` / `isolation: "worktree"`: find the repo, reuse or create the worktree and its branch. |
+
+It also reads Claude Code's merged settings once per worktree creation, only for the `worktree.baseRef` value.
+
+**Hooks and what they decide.**
+
+| Hook | What it decides, and when |
+| --- | --- |
+| `agent.offer` | Only when `blockBuiltin` is on: hides every agent type not provided by this plugin from the model. Otherwise not registered. |
+| `tool.describe` (Agent) | Appends a short note about `ext-agent:worker` and its `model` syntax to the Agent tool's description. |
+| `turn.step` | On the main conversation: if an Agent call's `model` is `pi…` or `opencode…` (which the Agent tool's schema would refuse), moves it into the prompt's `model:` header line. On a worker's own loop: runs the CLI instead of asking a Claude model (see below). Other loops pass through unchanged. |
+| `tool.call` (Agent) | Only when `blockBuiltin` is on: refuses a `subagent_type` other than `ext-agent:worker` with a usage message. For `ext-agent:worker` with `isolation: "worktree"`: removes `isolation` and writes a `worktree:` header into the prompt instead, because the engine's own worktree does not reach the CLI. Everything else passes to the next hook unchanged. |
+| `tool.call` (the worker's own `Bash`, `Read`, `Write`, `Edit`) | Stands in for these tools **only for calls this plugin itself created** to mirror what pi / opencode already did: it waits for the CLI's result and returns it. Any other tool call, from any agent, passes to the next hook unchanged. |
+| `session.compact` | Only for a worker's own transcript: drops the middle of it without asking a model (see How it works). Any other compaction passes through unchanged. |
+
+The plugin never answers a permission check: Claude Code's own permission rules decide for everything it does not
+create. The mirrored `Bash`/`Read`/`Write`/`Edit` calls are answered from the CLI's output and execute nothing in
+Claude Code.
+
+**Tool input it changes:** only the Agent tool's call (the `model` and `isolation` fields described above).
+
 ## Limits
 
 - Only the Claude Code side is managed. pi and opencode have their own context limits and compaction; a very long
