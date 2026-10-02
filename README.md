@@ -119,6 +119,13 @@ starts receives the task prompt (your header lines stripped) and reads and write
 what that process sends to its model provider is up to its own configuration, not this plugin. For an opencode model,
 the plugin runs `opencode models` once to check the name.
 
+**What it reads.** For each worker turn the plugin reads that worker's *own* transcript (`$.session.messages({ agentId })`),
+not the main conversation, to find the newest task message and its `model:` / `cwd:` / `worktree:` header lines. It
+strips `<system-reminder>` blocks and hands only the task text to the `pi` / `opencode` process as its prompt. When a
+worker is compacted (`session.compact`), it reads that worker's transcript to drop the middle of it. It reads Claude
+Code's merged settings only for the `worktree.baseRef` value, and the plugin's own options. It reads no files itself;
+files are read and written by the `pi` / `opencode` process you started.
+
 **Programs it runs.** Everything goes through two Claude Code calls: `$.process.run(argv)` starts a program with the
 given argument list, waits for it to finish and returns its output (used for the short `git`, `test` and
 `opencode models` commands below); `$.process.spawn({ argv })` starts a program with the given argument list and
