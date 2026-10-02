@@ -80,12 +80,6 @@ async function specOf($: EngineInterface, model = config.defaultModel): Promise<
 }
 
 /**
- * argv run from `dir`: the engine's own `cwd` option does not reach what
- * pi / opencode read as their directory, so a shell changes into it first.
- */
-const inDir = (dir: string, argv: string[]) => ['/bin/sh', '-c', 'cd "$1" && shift && exec "$@"', 'sh', dir, ...argv]
-
-/**
  * argv run from `dir` in a process group of its own, which the shell takes
  * down whole when the engine ends it (TaskStop, an interrupt), so no tool the
  * CLI started outlives the worker.
@@ -102,7 +96,9 @@ const supervised = (dir: string, argv: string[]) => [
  * stale idea of which project a directory is, and would not find it.
  */
 async function opencodeSession($: EngineInterface, cwd: string, title: string) {
-  const { stdout } = await $.process.run(inDir(cwd, ['opencode', 'session', 'list', '--standalone', '--format', 'json']))
+  const { stdout } = await $.process.run([
+    '/bin/sh', '-c', 'cd "$1" && exec opencode session list --standalone --format json', 'sh', cwd,
+  ])
   try {
     const sessions = JSON.parse(stdout) as { id: string; title?: string }[]
     return sessions.find((s) => s.title === title)?.id

@@ -139,6 +139,7 @@ argument; the table lists every command shape:
 | `pi` or `opencode` | The agent itself: `pi -p --mode json [--model <m>] --session-id <key> <prompt>`, or `opencode run --standalone --auto --format json [--model <m>] --title <key> [--session <id>] <prompt>`. |
 | `opencode models`, `opencode session list --standalone --format json` | Validate an opencode model name; find the opencode session of a worker being continued. |
 | `/bin/sh` | A fixed wrapper `cd "$1" && shift; set -m; "$@" & …` that changes into the worker's directory and runs the CLI in its own process group, so `TaskStop` or an interrupt stops everything the CLI started. The directory and the CLI's arguments are passed as separate arguments, not spliced into the script. |
+| `/bin/sh` (second use) | The fixed text `cd "$1" && exec opencode session list --standalone --format json`, with the worker's directory as `$1`, to list opencode sessions from that directory. |
 | `test -d <cwd>` | Check the `cwd:` header names a directory. |
 | `git rev-parse`, `git worktree list`, `git worktree prune`, `git symbolic-ref`, `git worktree add` | Only for `worktree:` / `isolation: "worktree"`: find the repo, reuse or create the worktree and its branch. |
 
