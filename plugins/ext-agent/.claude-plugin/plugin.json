@@ -1,0 +1,31 @@
+{
+  "name": "ext-agent",
+  "version": "1.0.0",
+  "description": "Run Claude Code subagents in pi or opencode instead of a Claude model. Adds the ext-agent:worker agent type; built-in subagents stay available unless you opt in to blocking them.",
+  "author": { "name": "darkautism", "url": "https://github.com/darkautism" },
+  "homepage": "https://github.com/darkautism/ext-agent",
+  "repository": "https://github.com/darkautism/ext-agent",
+  "license": "MIT",
+  "keywords": ["subagent", "pi", "opencode", "worktree"],
+  "userConfig": {
+    "blockBuiltin": {
+      "type": "boolean",
+      "title": "Block built-in subagents",
+      "description": "Off (default): ext-agent:worker is added next to the built-in agent types. On: only ext-agent:worker can be dispatched; the built-in types are hidden and refused.",
+      "default": false
+    },
+    "defaultModel": {
+      "type": "string",
+      "title": "Default model",
+      "description": "Used when an Agent call names none: \"pi\" or \"opencode\" (the CLI's own default model), or \"pi:<provider>/<model>[:<thinking>]\" / \"opencode:<provider/model[#variant]>\".",
+      "default": "pi"
+    },
+    "worktreeLayout": {
+      "type": "string",
+      "title": "Worktree layout",
+      "description": "Where `worktree:` / isolation \"worktree\" puts the checkout. claude: <repo>/.claude/worktrees/<name> on branch worktree-<name>, as Claude Code does (honours the worktree.baseRef setting). sibling: <repo>-wt/<name> on branch wip/<name>, off main.",
+      "default": "claude",
+      "options": ["claude", "sibling"]
+    }
+  }
+}

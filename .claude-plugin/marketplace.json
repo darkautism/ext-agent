@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ext-agent",
+  "description": "Run Claude Code subagents in pi or opencode.",
+  "owner": { "name": "darkautism" },
+  "plugins": [
+    {
+      "name": "ext-agent",
+      "description": "Run Claude Code subagents in pi or opencode instead of a Claude model, with the native subagent UI (background runs, SendMessage, TaskStop, worktrees).",
+      "author": { "name": "darkautism" },
+      "source": "./plugins/ext-agent",
+      "category": "development",
+      "homepage": "https://github.com/darkautism/ext-agent"
+    }
+  ]
+}
